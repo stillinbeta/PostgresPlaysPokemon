@@ -6,13 +6,15 @@ import os
 from PyBoy import PyBoy
 from PyBoy.GameWindow import SdlGameWindow as Window
 
+import paas
+
 if __name__ == "__main__":
     # Automatically bump to '-OO' optimizations
     if __debug__:
         os.execl(sys.executable, sys.executable, '-OO', *sys.argv)
 
-    ROM_path = "ROMs/Pokemon_Red.gb"
     bootROM = None
+    ROM_path = "ROMs/Pokemon_Red.gb"
     scale = 1
     debug = "debug" in sys.argv and platform.system() != "Windows"
 
@@ -29,9 +31,11 @@ if __name__ == "__main__":
         #     print('Player Name is: %s' % ' '.join(list(hex(pyboy.getMemoryValue(i)) for i in range(0xd158, 0xd162))))
         # signal.signal(signal.SIGUSR1, handler)
 
-        while not pyboy.tick():
+        server = paas.Server(pyboy)
+
+        while not server.tick():
             pass
-        pyboy.stop()
+        server.stop()
 
     except KeyboardInterrupt:
         print ("Interrupted by keyboard")
