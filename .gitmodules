@@ -1,0 +1,3 @@
+[submodule "server/PyBoy"]
+	path = server/PyBoy
+	url = https://github.com/Baekalfen/PyBoy.git

@@ -1,0 +1,10 @@
+cffi==1.11.2
+enum34==1.1.6
+futures==3.2.0
+greenlet==0.4.12
+imageio==2.4.1
+numpy==1.10.0
+Pillow==5.4.1
+pkg-resources==0.0.0
+PySDL2==0.9.6
+readline==6.2.4.1
