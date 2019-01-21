@@ -1,2 +1,5 @@
 /server/ROMs/Pokemon_Red.gb
 /server/venv/
+/client/src/server.rs
+/client/src/server_grpc.rs
+/client/target/

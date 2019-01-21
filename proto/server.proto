@@ -1,0 +1,24 @@
+syntax = "proto3";
+
+service PokemonRed {
+  rpc GetPokemon (GetPokemonRequest) returns (Party) {}
+}
+
+message GetPokemonRequest {
+}
+
+// https://bulbapedia.bulbagarden.net/wiki/Pok%C3%A9mon_data_structure_in_Generation_I#The_structure
+message Pokemon {
+  uint32 id = 1; 
+  uint32 hp = 2;
+  uint32 level = 3;
+  uint32 max_hp = 4;
+  uint32 attack = 5;
+  uint32 defense = 6;
+  uint32 speed = 7;
+  uint32 special = 8;
+}
+
+message Party {
+  repeated Pokemon party = 1;
+}
