@@ -6,3 +6,6 @@
 /server/paas/server_pb2.py
 /server/paas/server_pb2_grpc.py
 *.pyc
+/*.pyo
+*.pyo
+/server/venv2

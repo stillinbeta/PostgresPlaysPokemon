@@ -31,11 +31,13 @@ if __name__ == "__main__":
         #     print('Player Name is: %s' % ' '.join(list(hex(pyboy.getMemoryValue(i)) for i in range(0xd158, 0xd162))))
         # signal.signal(signal.SIGUSR1, handler)
 
-        server = paas.Server(pyboy)
+        # while not pyboy.tick():
+        #     pass
+        # pyboy.stop()
 
-        while not server.tick():
-            pass
-        server.stop()
+        server = paas.Server(pyboy)
+        server.run()
+
 
     except KeyboardInterrupt:
         print ("Interrupted by keyboard")
