@@ -5,11 +5,13 @@ import grpc
 from . import server_pb2_grpc
 from .servicer import PokemonRedService
 
+
 class Server:
     def __init__(self, pyboy, port=50051):
         self._pyboy = pyboy
         self._server = grpc.server(futures.ThreadPoolExecutor(max_workers=10))
-        server_pb2_grpc.add_PokemonRedServicer_to_server(PokemonRedService(), self._server)
+        server_pb2_grpc.add_PokemonRedServicer_to_server(
+            PokemonRedService(self._pyboy), self._server)
         self._server.add_insecure_port('unix:/tmp/ppp')
 
     def start(self):
