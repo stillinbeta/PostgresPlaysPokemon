@@ -1,3 +1,5 @@
+import logging
+
 from . import server_pb2_grpc
 from .server_pb2 import Party, Pokemon
 
@@ -14,6 +16,11 @@ pokemon = [
     )
 ]
 
+# http://datacrystal.romhacking.net/wiki/Pok%C3%A9mon_Red/Blue:RAM_map#Player
+POKEMON_PARTY_COUNT = 0xD163
+POKEMON_PARTY_START = 0xD16B
+POKEMON_STRUCT_SIZE = 44
+
 def _get_two_bytes(pyboy, address):
     return (pyboy.getMemoryValue(address) << 8) + pyboy.getMemoryValue(address + 0x1)
 
@@ -25,11 +32,12 @@ class PokemonRedService(server_pb2_grpc.PokemonRedServicer):
         self._pyboy = pyboy
 
     def GetPokemon(self, request, context):
-        return Party(party=[self.get_first_pokemon()])
+        party_size = self._pyboy.getMemoryValue(POKEMON_PARTY_COUNT)
 
-    def get_first_pokemon(self):
-        # red offset + 1st pokemon
-        return self.get_pokemon(0xd163 + 0x08)
+        return Party(party=map(self._get_pokemon_in_party, range(party_size)))
+
+    def _get_pokemon_in_party(self, i):
+        return self.get_pokemon(POKEMON_PARTY_START + POKEMON_STRUCT_SIZE * i)
 
     def get_pokemon(self, offset):
         return Pokemon(
