@@ -1,4 +1,4 @@
-/server/ROMs/Pokemon_Red.gb
+/server/ROMs
 /server/venv/
 /client/src/server.rs
 /client/src/server_grpc.rs
@@ -6,6 +6,4 @@
 /server/paas/server_pb2.py
 /server/paas/server_pb2_grpc.py
 *.pyc
-/*.pyo
 *.pyo
-/server/venv2

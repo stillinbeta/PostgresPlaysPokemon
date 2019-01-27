@@ -1,4 +1,4 @@
-git+https://bitbucket.org/pypy/numpy.git
+numpy==1.15.4
 grpcio==1.18.0
 pysdl2==0.9.6
 imageio==2.4.1
