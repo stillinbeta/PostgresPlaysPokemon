@@ -13,7 +13,7 @@ pokemon = [
         defense=30,
         speed=90,
         special=50,
-    )
+   )
 ]
 
 # http://datacrystal.romhacking.net/wiki/Pok%C3%A9mon_Red/Blue:RAM_map#Player

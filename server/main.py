@@ -15,7 +15,7 @@ if __name__ == "__main__":
 
     bootROM = None
     ROM_path = "ROMs/Pokemon_Red.gb"
-    scale = 1
+    scale = 2
     debug = "debug" in sys.argv and platform.system() != "Windows"
 
     if not os.path.exists(ROM_path) and len(sys.argv) < 2:

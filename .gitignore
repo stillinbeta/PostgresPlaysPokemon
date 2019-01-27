@@ -7,3 +7,4 @@
 /server/paas/server_pb2_grpc.py
 *.pyc
 *.pyo
+/client/extension/target/

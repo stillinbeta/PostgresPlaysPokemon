@@ -1,0 +1,13 @@
+[package]
+name = "pg-extension"
+version = "0.1.0"
+authors = ["stillinbeta <web@stillinbeta.com>"]
+edition = "2018"
+
+[dependencies]
+ppp-client = { path = "../" }
+pg-extend = { git = "https://github.com/bluejekyll/pg-extend-rs", rev = "1209b54c17d49ea76c939f171a07a5f9db07b0dc" }
+pg-extern-attr = { git = "https://github.com/bluejekyll/pg-extend-rs", rev = "1209b54c17d49ea76c939f171a07a5f9db07b0dc" }
+
+[lib]
+crate-type = ["cdylib"]

@@ -15,7 +15,6 @@ name = "client"
 path = "src/main.rs"
 
 [dependencies]
-pg-extend = { git = "https://github.com/bluejekyll/pg-extend-rs", rev = "1209b54c17d49ea76c939f171a07a5f9db07b0dc" }
 grpc            = "~0.6"
 protobuf        = "~2"
 futures         = "~0.1"
