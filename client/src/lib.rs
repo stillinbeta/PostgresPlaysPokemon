@@ -33,6 +33,16 @@ impl Client {
 
         Ok(party.get_party().to_vec())
     }
+
+    pub fn set_memory(&self, dest: u32, val: u32) -> Result<u32, grpc::Error> {
+        let mut req = server::MemoryUpdate::new();
+        req.set_location(dest.into());
+        req.set_value(val.into());
+        let resp = self.client.set_memory(grpc::RequestOptions::new(), req);
+        let (_, old, _) = resp.wait()?;
+        Ok(old.original_value.into())
+
+    }
 }
 
 #[cfg(test)]

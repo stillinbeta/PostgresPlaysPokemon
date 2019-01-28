@@ -2,6 +2,7 @@ syntax = "proto3";
 
 service PokemonRed {
   rpc GetPokemon (GetPokemonRequest) returns (Party) {}
+  rpc SetMemory (MemoryUpdate) returns (MemoryResponse) {}
 }
 
 message GetPokemonRequest {
@@ -17,8 +18,20 @@ message Pokemon {
   uint32 defense = 6;
   uint32 speed = 7;
   uint32 special = 8;
+
+
+  uint32 position = 99;
 }
 
 message Party {
   repeated Pokemon party = 1;
+}
+
+message MemoryUpdate {
+  uint32 location = 1;
+  uint32 value = 2;
+}
+
+message MemoryResponse {
+  uint32 original_value = 1;
 }

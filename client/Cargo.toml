@@ -20,5 +20,9 @@ protobuf        = "~2"
 futures         = "~0.1"
 futures-cpupool = "~0.1"
 
+[dependencies.clap]
+version = "~2.27.0"
+default-features = false
+
 [build-dependencies]
 protoc-rust-grpc = "0.6.1"
