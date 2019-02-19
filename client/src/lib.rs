@@ -43,11 +43,14 @@ impl Client {
         Ok(old.original_value.into())
     }
 
-    pub fn set_pokemon(&self, slot: u32, id: Option<u32>) -> Result<server::Pokemon, grpc::Error> {
+    pub fn set_pokemon(&self, slot: u32, id: Option<u32>, hp: Option<u32>) -> Result<server::Pokemon, grpc::Error> {
         let mut req = server::UpdatePokemonRequest::new();
         req.set_position(slot);
         if let Some(id) = id {
             req.set_id(id.into())
+        }
+        if let Some(hp) = hp {
+            req.set_hp(hp.into())
         }
         let resp = self.client.update_pokemon(grpc::RequestOptions::new(), req);
         let (_, mut poke, _) = resp.wait()?;

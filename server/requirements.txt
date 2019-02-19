@@ -1,5 +1,6 @@
 git+https://bitbucket.org/pypy/numpy.git
 grpcio==1.18.0
+grpcio-tools==1.18.0
 pysdl2==0.9.6
 imageio==2.4.1
 protobuf==3.6.1

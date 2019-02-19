@@ -21,7 +21,13 @@ fn main() {
                          .required(true)
                          .index(1))
                     .arg(Arg::with_name("id")
-                         .help("Set pokemon id (kind)")))
+                         .long("id")
+                         .help("Set pokemon id (kind)")
+                         .takes_value(true))
+                    .arg(Arg::with_name("hp")
+                         .long("hp")
+                         .help("Set pokemon HP")
+                         .takes_value(true)))
         .get_matches();
 
     let client = Client::new();
@@ -44,13 +50,13 @@ fn main() {
             println!("{:04x} was {:08x}, now {:08x}", dest, resp, val)
         }
         Some("update-pokemon") => {
+            let matches = matches.subcommand_matches("update-pokemon").unwrap();
             let slot = u32::from_str_radix(
                 matches.value_of("SLOT").unwrap()
-            , 16).expect("Failed to parse SLOT");
-
-
-            let id = matches.value_of("id").map(|v| u32::from_str_radix(v, 16).expect("failed to parse ID"));
-            let resp = client.set_pokemon(slot, id);
+            , 10).expect("Failed to parse SLOT");
+            let id = matches.value_of("id").map(|v| u32::from_str_radix(v, 10).expect("failed to parse ID"));
+            let hp = matches.value_of("hp").map(|v| u32::from_str_radix(v, 10).expect("failed to parse ID"));
+            let resp = client.set_pokemon(slot, id, hp);
             println!("Pokemon: {:?}", resp)
         }
         Some(cmd) => panic!(format!("unknown subcommand {}", cmd)),
