@@ -15,8 +15,13 @@ fn main() {
                          .index(1))
                     .arg(Arg::with_name("VALUE")
                          .required(true)
-                         .index(2))
-        )
+                         .index(2)))
+        .subcommand(SubCommand::with_name("update-pokemon")
+                    .arg(Arg::with_name("SLOT")
+                         .required(true)
+                         .index(1))
+                    .arg(Arg::with_name("id")
+                         .help("Set pokemon id (kind)")))
         .get_matches();
 
     let client = Client::new();
@@ -37,6 +42,16 @@ fn main() {
             , 16).expect("Failed to parse VALUE");
             let resp = client.set_memory(dest, val).expect("Failed to set memory");
             println!("{:04x} was {:08x}, now {:08x}", dest, resp, val)
+        }
+        Some("update-pokemon") => {
+            let slot = u32::from_str_radix(
+                matches.value_of("SLOT").unwrap()
+            , 16).expect("Failed to parse SLOT");
+
+
+            let id = matches.value_of("id").map(|v| u32::from_str_radix(v, 16).expect("failed to parse ID"));
+            let resp = client.set_pokemon(slot, id);
+            println!("Pokemon: {:?}", resp)
         }
         Some(cmd) => panic!(format!("unknown subcommand {}", cmd)),
         None => {

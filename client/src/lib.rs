@@ -41,7 +41,17 @@ impl Client {
         let resp = self.client.set_memory(grpc::RequestOptions::new(), req);
         let (_, old, _) = resp.wait()?;
         Ok(old.original_value.into())
+    }
 
+    pub fn set_pokemon(&self, slot: u32, id: Option<u32>) -> Result<server::Pokemon, grpc::Error> {
+        let mut req = server::UpdatePokemonRequest::new();
+        req.set_position(slot);
+        if let Some(id) = id {
+            req.set_id(id.into())
+        }
+        let resp = self.client.update_pokemon(grpc::RequestOptions::new(), req);
+        let (_, mut poke, _) = resp.wait()?;
+        Ok(poke.take_pokemon())
     }
 }
 

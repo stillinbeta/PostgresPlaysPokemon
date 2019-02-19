@@ -2,10 +2,28 @@ syntax = "proto3";
 
 service PokemonRed {
   rpc GetPokemon (GetPokemonRequest) returns (Party) {}
+  rpc UpdatePokemon (UpdatePokemonRequest) returns  (UpdatePokemonResponse) {}
   rpc SetMemory (MemoryUpdate) returns (MemoryResponse) {}
 }
 
 message GetPokemonRequest {
+}
+
+message UpdatePokemonRequest {
+  oneof set_id      { uint32 id = 1;      }
+  oneof set_hp      { uint32 hp = 2;      }
+  oneof set_level   { uint32 level = 3;   }
+  oneof set_max_hp  { uint32 max_hp = 4;  }
+  oneof set_attack  { uint32 attack = 5;  }
+  oneof set_defense { uint32 defense = 6; }
+  oneof set_speed   { uint32 speed = 7;   }
+  oneof set_special { uint32 special = 8; }
+
+  uint32 position = 99;
+}
+
+message UpdatePokemonResponse {
+  Pokemon pokemon = 1;
 }
 
 // https://bulbapedia.bulbagarden.net/wiki/Pok%C3%A9mon_data_structure_in_Generation_I#The_structure
@@ -18,7 +36,6 @@ message Pokemon {
   uint32 defense = 6;
   uint32 speed = 7;
   uint32 special = 8;
-
 
   uint32 position = 99;
 }
