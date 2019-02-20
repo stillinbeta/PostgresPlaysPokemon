@@ -6,8 +6,9 @@ edition = "2018"
 
 [dependencies]
 ppp-client = { path = "../" }
-pg-extend = { git = "https://github.com/bluejekyll/pg-extend-rs", rev = "1209b54c17d49ea76c939f171a07a5f9db07b0dc" }
-pg-extern-attr = { git = "https://github.com/bluejekyll/pg-extend-rs", rev = "1209b54c17d49ea76c939f171a07a5f9db07b0dc" }
+# pg-extend = { git = "https://github.com/bluejekyll/pg-extend-rs", rev = "405ab4ca64b307a32f87f1f5b4f0922660cb48dd" }
+pg-extend = { git = "https://github.com/bluejekyll/pg-extend-rs", rev = "23f0cfd718477dfeb2de1c5595c5a0e7084b41ad" }
+pg-extern-attr = { git = "https://github.com/bluejekyll/pg-extend-rs", rev = "23f0cfd718477dfeb2de1c5595c5a0e7084b41ad" }
 
 [lib]
 crate-type = ["cdylib"]

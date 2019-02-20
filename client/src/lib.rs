@@ -17,6 +17,7 @@ pub struct Client {
 
 const SOCKET_PATH: &str = "/tmp/ppp";
 
+#[derive(Debug)]
 pub struct UpdatePokemon {
     pub slot: u32,
     pub id: Option<u32>,
