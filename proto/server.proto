@@ -3,7 +3,13 @@ syntax = "proto3";
 service PokemonRed {
   rpc GetPokemon (GetPokemonRequest) returns (Party) {}
   rpc UpdatePokemon (UpdatePokemonRequest) returns  (UpdatePokemonResponse) {}
+
+  rpc GetInventory(GetInventoryRequest) returns (GetInventoryResponse) {}
+
   rpc SetMemory (MemoryUpdate) returns (MemoryResponse) {}
+
+
+
 }
 
 message GetPokemonRequest {
@@ -51,4 +57,17 @@ message MemoryUpdate {
 
 message MemoryResponse {
   uint32 original_value = 1;
+}
+
+message GetInventoryRequest {};
+
+message GetInventoryResponse {
+  repeated InventoryItem items = 1;
+}
+
+message InventoryItem {
+  uint32 id = 1;
+  uint32 quantity = 2;
+
+  uint32 position = 99;
 }

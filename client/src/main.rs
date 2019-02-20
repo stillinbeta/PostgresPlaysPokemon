@@ -24,6 +24,7 @@ fn main() {
 
     let matches = app_from_crate!()
         .subcommand(SubCommand::with_name("list-party"))
+        .subcommand(SubCommand::with_name("list-inventory"))
         .subcommand(SubCommand::with_name("set-memory")
                     .arg(Arg::with_name("DESTINATION")
                          .required(true)
@@ -52,6 +53,11 @@ fn main() {
         Some("list-party") => {
             for pokemon in client.get_pokemon().expect("Failed to retrieve pokemon") {
                 println!("Found pokemon: {:?}", pokemon)
+            }
+        }
+        Some("list-inventory") => {
+            for item in client.get_inventory().expect("Failed to retrieve items") {
+                println!("Found {} of {:x}", item.get_quantity(), item.get_id())
             }
         }
         Some("set-memory") => {

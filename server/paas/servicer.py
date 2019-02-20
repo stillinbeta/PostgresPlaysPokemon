@@ -1,7 +1,7 @@
 import logging
 
 from . import server_pb2_grpc
-from .server_pb2 import Party, Pokemon, MemoryResponse, UpdatePokemonResponse
+from . import server_pb2 as pb
 
 # http://datacrystal.romhacking.net/wiki/Pok%C3%A9mon_Red/Blue:RAM_map#Player
 POKEMON_PARTY_COUNT = 0xD163
@@ -9,8 +9,13 @@ POKEMON_PARTY_ID_START = 0xD164
 POKEMON_PARTY_START = 0xD16B
 POKEMON_STRUCT_SIZE = 44
 
+POKEMON_INVENTORY_START = 0xD31D
+
+
 def _get_two_bytes(pyboy, address):
-    return (pyboy.getMemoryValue(address) << 8) + pyboy.getMemoryValue(address + 0x1)
+    return (pyboy.getMemoryValue(address) <<
+            8) + pyboy.getMemoryValue(address + 0x1)
+
 
 def _set_two_bytes(pyboy, address, value):
     pyboy.setMemoryValue(address, value >> 8)
@@ -25,7 +30,8 @@ class PokemonRedService(server_pb2_grpc.PokemonRedServicer):
     def GetPokemon(self, request, context):
         party_size = self._pyboy.getMemoryValue(POKEMON_PARTY_COUNT)
 
-        return Party(party=map(self._get_pokemon_in_party, range(party_size)))
+        return pb.Party(
+            party=map(self._get_pokemon_in_party, range(party_size)))
 
     def UpdatePokemon(self, request, context):
         start = POKEMON_PARTY_START + POKEMON_STRUCT_SIZE * request.position
@@ -34,9 +40,7 @@ class PokemonRedService(server_pb2_grpc.PokemonRedServicer):
             # ID is set in two places
             self._pyboy.setMemoryValue(start, request.id)
             self._pyboy.setMemoryValue(
-                POKEMON_PARTY_ID_START + request.position,
-                request.id
-            )
+                POKEMON_PARTY_ID_START + request.position, request.id)
         if request.WhichOneof("set_hp") is not None:
             _set_two_bytes(self._pyboy, start + 0x1, request.hp)
         if request.WhichOneof("set_level") is not None:
@@ -52,22 +56,22 @@ class PokemonRedService(server_pb2_grpc.PokemonRedServicer):
         if request.WhichOneof("set_special") is not None:
             _set_two_bytes(self._pyboy, start + 0x2A, request.special)
 
-        return UpdatePokemonResponse(
-            pokemon=self._get_pokemon_in_party(request.position)
-        )
+        return pb.UpdatePokemonResponse(
+            pokemon=self._get_pokemon_in_party(request.position))
 
     def SetMemory(self, request, context):
         orig = self._pyboy.getMemoryValue(request.location)
         self._pyboy.setMemoryValue(request.location, request.value)
-        return MemoryResponse(original_value=orig)
+        return pb.MemoryResponse(original_value=orig)
 
     def _get_pokemon_in_party(self, i):
-        pokemon = self.get_pokemon(POKEMON_PARTY_START + POKEMON_STRUCT_SIZE * i)
+        pokemon = self.get_pokemon(
+            POKEMON_PARTY_START + POKEMON_STRUCT_SIZE * i)
         pokemon.position = i
         return pokemon
 
     def get_pokemon(self, offset):
-        return Pokemon(
+        return pb.Pokemon(
             id=self._pyboy.getMemoryValue(offset),
             hp=_get_two_bytes(self._pyboy, offset + 0x1),
             level=self._pyboy.getMemoryValue(offset + 0x3),
@@ -78,4 +82,16 @@ class PokemonRedService(server_pb2_grpc.PokemonRedServicer):
             special=_get_two_bytes(self._pyboy, offset + 0x2A),
         )
 
+    def get_inventory_item(self, index):
+        offset = (POKEMON_INVENTORY_START + 1) + (index * 2)
 
+        return pb.InventoryItem(
+            id=self._pyboy.getMemoryValue(offset),
+            quantity=self._pyboy.getMemoryValue(offset + 1),
+            position=index,
+        )
+
+    def GetInventory(self, request, context):
+        total = self._pyboy.getMemoryValue(POKEMON_INVENTORY_START)
+        return pb.GetInventoryResponse(
+            items=map(self.get_inventory_item, range(total)))

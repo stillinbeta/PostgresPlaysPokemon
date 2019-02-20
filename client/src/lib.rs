@@ -80,6 +80,14 @@ impl Client {
         Ok(party.get_party().to_vec())
     }
 
+    pub fn get_inventory(&self) -> Result<Vec<server::InventoryItem>, grpc::Error> {
+        let req = server::GetInventoryRequest::new();
+        let resp = self.client.get_inventory(grpc::RequestOptions::new(), req);
+        let (_, items, _) = resp.wait()?;
+
+        Ok(items.get_items().to_vec())
+    }
+
     pub fn set_memory(&self, dest: u32, val: u32) -> Result<u32, grpc::Error> {
         let mut req = server::MemoryUpdate::new();
         req.set_location(dest.into());
