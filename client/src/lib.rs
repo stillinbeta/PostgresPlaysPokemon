@@ -17,6 +17,51 @@ pub struct Client {
 
 const SOCKET_PATH: &str = "/tmp/ppp";
 
+pub struct UpdatePokemon {
+    pub slot: u32,
+    pub id: Option<u32>,
+    pub hp: Option<u32>,
+    pub level: Option<u32>,
+    pub max_hp: Option<u32>,
+    pub attack: Option<u32>,
+    pub defense: Option<u32>,
+    pub speed: Option<u32>,
+    pub special: Option<u32>,
+}
+
+impl From<&UpdatePokemon> for  server::UpdatePokemonRequest {
+    fn from(p: &UpdatePokemon) -> server::UpdatePokemonRequest {
+        let mut req = server::UpdatePokemonRequest::new();
+        req.set_position(p.slot.into());
+        if let Some(id) = p.id {
+            req.set_id(id.into())
+        }
+        if let Some(hp) = p.hp {
+            req.set_hp(hp.into())
+        }
+        if let Some(level) = p.level {
+            req.set_level(level.into())
+        }
+        if let Some(max_hp) = p.max_hp {
+            req.set_max_hp(max_hp.into())
+        }
+        if let Some(attack) = p.attack {
+            req.set_attack(attack.into())
+        }
+        if let Some(defense) = p.defense {
+            req.set_defense(defense.into())
+        }
+        if let Some(speed) = p.speed {
+            req.set_speed(speed.into())
+        }
+        if let Some(special) = p.special {
+            req.set_special(special.into())
+        }
+        req
+    }
+
+}
+
 impl Client {
     pub fn new() -> Self {
         let conf = Default::default();
@@ -43,16 +88,8 @@ impl Client {
         Ok(old.original_value.into())
     }
 
-    pub fn set_pokemon(&self, slot: u32, id: Option<u32>, hp: Option<u32>) -> Result<server::Pokemon, grpc::Error> {
-        let mut req = server::UpdatePokemonRequest::new();
-        req.set_position(slot);
-        if let Some(id) = id {
-            req.set_id(id.into())
-        }
-        if let Some(hp) = hp {
-            req.set_hp(hp.into())
-        }
-        let resp = self.client.update_pokemon(grpc::RequestOptions::new(), req);
+    pub fn set_pokemon(&self, p: &UpdatePokemon) -> Result<server::Pokemon, grpc::Error> {
+        let resp = self.client.update_pokemon(grpc::RequestOptions::new(), p.into());
         let (_, mut poke, _) = resp.wait()?;
         Ok(poke.take_pokemon())
     }

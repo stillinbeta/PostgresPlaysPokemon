@@ -39,7 +39,18 @@ class PokemonRedService(server_pb2_grpc.PokemonRedServicer):
             )
         if request.WhichOneof("set_hp") is not None:
             _set_two_bytes(self._pyboy, start + 0x1, request.hp)
-        else: print("not set")
+        if request.WhichOneof("set_level") is not None:
+            self._pyboy.setMemoryValue(start + 0x3, request.level)
+        if request.WhichOneof("set_max_hp") is not None:
+            _set_two_bytes(self._pyboy, start + 0x22, request.max_hp)
+        if request.WhichOneof("set_attack") is not None:
+            _set_two_bytes(self._pyboy, start + 0x24, request.attack)
+        if request.WhichOneof("set_attack") is not None:
+            _set_two_bytes(self._pyboy, start + 0x26, request.attack)
+        if request.WhichOneof("set_speed") is not None:
+            _set_two_bytes(self._pyboy, start + 0x28, request.speed)
+        if request.WhichOneof("set_special") is not None:
+            _set_two_bytes(self._pyboy, start + 0x2A, request.special)
 
         return UpdatePokemonResponse(
             pokemon=self._get_pokemon_in_party(request.position)

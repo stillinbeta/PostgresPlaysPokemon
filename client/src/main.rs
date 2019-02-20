@@ -5,6 +5,21 @@ extern crate ppp_client;
 use clap::{SubCommand,Arg};
 use ppp_client::Client;
 
+fn get_arg(matches: &clap::ArgMatches, key: &str) -> Option<u32> {
+    matches.value_of(key) .map(|v| u32::from_str_radix(v, 10).expect(&format!("failed to parse \"{}\"", key)))
+}
+
+macro_rules! make_arg {
+    ( $key:expr ) => {
+        {
+            Arg::with_name($key)
+                .long($key)
+                .help(&format!("Set pokemon '{}'", $key).clone())
+                .takes_value(true)
+        }
+    };
+}
+
 fn main() {
 
     let matches = app_from_crate!()
@@ -20,14 +35,15 @@ fn main() {
                     .arg(Arg::with_name("SLOT")
                          .required(true)
                          .index(1))
-                    .arg(Arg::with_name("id")
-                         .long("id")
-                         .help("Set pokemon id (kind)")
-                         .takes_value(true))
-                    .arg(Arg::with_name("hp")
-                         .long("hp")
-                         .help("Set pokemon HP")
-                         .takes_value(true)))
+                    .arg(make_arg!("id"))
+                    .arg(make_arg!("hp"))
+                    .arg(make_arg!("level"))
+                    .arg(make_arg!("max-hp"))
+                    .arg(make_arg!("attack"))
+                    .arg(make_arg!("defense"))
+                    .arg(make_arg!("speed"))
+                    .arg(make_arg!("special"))
+        )
         .get_matches();
 
     let client = Client::new();
@@ -51,12 +67,19 @@ fn main() {
         }
         Some("update-pokemon") => {
             let matches = matches.subcommand_matches("update-pokemon").unwrap();
-            let slot = u32::from_str_radix(
-                matches.value_of("SLOT").unwrap()
-            , 10).expect("Failed to parse SLOT");
-            let id = matches.value_of("id").map(|v| u32::from_str_radix(v, 10).expect("failed to parse ID"));
-            let hp = matches.value_of("hp").map(|v| u32::from_str_radix(v, 10).expect("failed to parse ID"));
-            let resp = client.set_pokemon(slot, id, hp);
+            let resp = client.set_pokemon(
+                &ppp_client::UpdatePokemon{
+                    slot: get_arg(matches, "SLOT").unwrap(),
+                    id: get_arg(matches, "id"),
+                    hp: get_arg(matches, "hp"),
+                    level: get_arg(matches, "level"),
+                    max_hp: get_arg(matches, "max-hp"),
+                    attack: get_arg(matches, "attack"),
+                    defense: get_arg(matches, "defense"),
+                    speed: get_arg(matches, "speed"),
+                    special: get_arg(matches, "special"),
+                }
+            );
             println!("Pokemon: {:?}", resp)
         }
         Some(cmd) => panic!(format!("unknown subcommand {}", cmd)),
