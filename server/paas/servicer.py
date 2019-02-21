@@ -156,3 +156,30 @@ class PokemonRedService(server_pb2_grpc.PokemonRedServicer):
             ]
         )
 
+    def SetEvent(self, request, context):
+        if request.event.event == pb.Event.GOT_PARCEL:
+            oak_byte = self._pyboy.getMemoryValue(POKEMON_OAK_EVENT)
+            if request.event.setting:
+                oak_byte |= 0x1
+            else:
+                oak_byte ^= 0x1
+            self._pyboy.setMemoryValue(POKEMON_OAK_EVENT, oak_byte)
+        elif request.event.event == pb.Event.DELIVERED_PARCEL:
+            oak_byte = self._pyboy.getMemoryValue(POKEMON_OAK_EVENT)
+            if request.event.setting:
+                oak_byte |= 0x2
+            else:
+                oak_byte ^= 0x2
+            self._pyboy.setMemoryValue(POKEMON_OAK_EVENT, oak_byte)
+        elif request.event.event == pb.Event.GOT_POKEDEX:
+            pokedex_byte = self._pyboy.getMemoryValue(POKEMON_POKEDEX_EVENT)
+            if request.event.setting:
+                pokedex_byte |= 0x32
+            else:
+                pokedex_byte ^= 0x32
+            self._pyboy.setMemoryValue(POKEMON_POKEDEX_EVENT, pokedex_byte)
+
+        return pb.SetEventResponse(event=request.event)
+
+
+

@@ -20,6 +20,21 @@ CREATE FOREIGN TABLE party (
 , special Integer
 ) SERVER red;
 
-UPDATE party SET hp = 500, max_hp = 500 WHERE position = 4;
+
+CREATE FOREIGN TABLE inventory (
+  id Integer
+, position Integer
+, quantity Integer
+) SERVER red;
+
+CREATE FOREIGN TABLE story (
+  event text
+, setting integer
+) SERVER red;
+
 
 SELECT * FROM party;
+
+SELECT * FROM inventory;
+
+SELECT * FROM story;

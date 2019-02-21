@@ -5,10 +5,10 @@ authors = ["stillinbeta <web@stillinbeta.com>"]
 edition = "2018"
 
 [dependencies]
+grpc            = "~0.6"
 ppp-client = { path = "../" }
-# pg-extend = { git = "https://github.com/bluejekyll/pg-extend-rs", rev = "405ab4ca64b307a32f87f1f5b4f0922660cb48dd" }
-pg-extend = { git = "https://github.com/bluejekyll/pg-extend-rs", rev = "23f0cfd718477dfeb2de1c5595c5a0e7084b41ad" }
-pg-extern-attr = { git = "https://github.com/bluejekyll/pg-extend-rs", rev = "23f0cfd718477dfeb2de1c5595c5a0e7084b41ad" }
+pg-extend = { git = "https://github.com/bluejekyll/pg-extend-rs", rev = "5850649fffc64e15798750bf1fd82eacb0615763" }
+pg-extern-attr = { git = "https://github.com/bluejekyll/pg-extend-rs", rev = "5850649fffc64e15798750bf1fd82eacb0615763" }
 
 [lib]
 crate-type = ["cdylib"]

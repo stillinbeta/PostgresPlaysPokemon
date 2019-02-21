@@ -14,8 +14,7 @@ service PokemonRed {
   rpc SetMemory (MemoryUpdate) returns (MemoryResponse) {}
 }
 
-message GetPokemonRequest {
-}
+message GetPokemonRequest {}
 
 message UpdatePokemonRequest {
   oneof set_id      { uint32 id = 1;      }

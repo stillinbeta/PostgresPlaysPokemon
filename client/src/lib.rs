@@ -133,6 +133,20 @@ impl Client {
         Ok(events.get_events().to_vec())
     }
 
+    pub fn set_event(&self, event: server::Event_EventType, setting: bool) -> Result<server::Event, grpc::Error> {
+        let evt = server::Event{
+            event,
+            setting,
+            ..Default::default()
+        };
+        let mut req = server::SetEventRequest::new();
+        req.set_event(evt);
+
+        let resp = self.client.set_event(grpc::RequestOptions::new(), req);
+        let (_, mut evt, _) = resp.wait()?;
+        Ok(evt.take_event())
+    }
+
 }
 
 #[cfg(test)]
