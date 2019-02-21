@@ -88,6 +88,28 @@ impl Client {
         Ok(items.get_items().to_vec())
     }
 
+    pub fn add_item(&self, id: u32, quantity: u32) -> Result<server::InventoryItem, grpc::Error>{
+        let mut req = server::AddItemRequest::new();
+        req.set_item(server::Item{id, quantity, ..Default::default()});
+        let resp = self.client.add_item(grpc::RequestOptions::new(), req);
+
+        let (_, mut resp, _) = resp.wait()?;
+        Ok(resp.take_item())
+    }
+
+    pub fn update_item(&self, slot: u32, id: u32, quantity: u32) -> Result<server::InventoryItem, grpc::Error> {
+        let invitem = server::InventoryItem::new();
+        invitem.set_item(server::Item{id, quantity, ..Default::default()});
+        invitem.set_position(slot);
+
+        let mut req = server::UpdateInventoryRequest::new();
+        req.set_item(invitem);
+        let resp = self.client.update_inventory(grpc::RequestOptions::new(), req);
+
+        let (_, mut resp, _) = resp.wait()?;
+        Ok(resp.take_item())
+     }
+
     pub fn set_memory(&self, dest: u32, val: u32) -> Result<u32, grpc::Error> {
         let mut req = server::MemoryUpdate::new();
         req.set_location(dest.into());
@@ -102,6 +124,7 @@ impl Client {
         let (_, mut poke, _) = resp.wait()?;
         Ok(poke.take_pokemon())
     }
+
 }
 
 #[cfg(test)]

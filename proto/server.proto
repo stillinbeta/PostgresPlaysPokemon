@@ -5,11 +5,10 @@ service PokemonRed {
   rpc UpdatePokemon (UpdatePokemonRequest) returns  (UpdatePokemonResponse) {}
 
   rpc GetInventory(GetInventoryRequest) returns (GetInventoryResponse) {}
+  rpc UpdateInventory(UpdateInventoryRequest) returns (UpdateInventoryResponse) {}
+  rpc AddItem(AddItemRequest) returns (AddItemResponse) {}
 
   rpc SetMemory (MemoryUpdate) returns (MemoryResponse) {}
-
-
-
 }
 
 message GetPokemonRequest {
@@ -59,15 +58,35 @@ message MemoryResponse {
   uint32 original_value = 1;
 }
 
+message AddItemRequest {
+  Item item = 1;
+};
+
+message AddItemResponse {
+  InventoryItem item = 1;
+};
+
+message UpdateInventoryRequest {
+  InventoryItem item = 1;
+} 
+
+message UpdateInventoryResponse {
+  InventoryItem item = 1;
+}
+
 message GetInventoryRequest {};
 
 message GetInventoryResponse {
   repeated InventoryItem items = 1;
 }
 
-message InventoryItem {
+message Item {
   uint32 id = 1;
   uint32 quantity = 2;
+}
 
+
+message InventoryItem {
+  Item item = 1;
   uint32 position = 99;
 }

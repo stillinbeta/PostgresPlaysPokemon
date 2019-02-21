@@ -5,8 +5,12 @@ extern crate ppp_client;
 use clap::{SubCommand,Arg};
 use ppp_client::Client;
 
+fn get_arg_radx(matches: &clap::ArgMatches, key: &str, radix: u32) -> Option<u32> {
+    matches.value_of(key) .map(|v| u32::from_str_radix(v, radix).expect(&format!("failed to parse \"{}\"", key)))
+}
+
 fn get_arg(matches: &clap::ArgMatches, key: &str) -> Option<u32> {
-    matches.value_of(key) .map(|v| u32::from_str_radix(v, 10).expect(&format!("failed to parse \"{}\"", key)))
+    get_arg_radx(matches, key, 10)
 }
 
 macro_rules! make_arg {
@@ -16,6 +20,14 @@ macro_rules! make_arg {
                 .long($key)
                 .help(&format!("Set pokemon '{}'", $key).clone())
                 .takes_value(true)
+        }
+    };
+}
+
+macro_rules! make_required_arg {
+    ( $key:expr ) => {
+        {
+            make_arg!($key).required(true)
         }
     };
 }
@@ -43,8 +55,16 @@ fn main() {
                     .arg(make_arg!("attack"))
                     .arg(make_arg!("defense"))
                     .arg(make_arg!("speed"))
-                    .arg(make_arg!("special"))
-        )
+                    .arg(make_arg!("special")))
+        .subcommand(SubCommand::with_name("update-item")
+                    .arg(Arg::with_name("SLOT")
+                         .required(true)
+                         .index(1))
+                    .arg(make_required_arg!("id"))
+                    .arg(make_required_arg!("quantity")))
+        .subcommand(SubCommand::with_name("add-item")
+                    .arg(make_required_arg!("id"))
+                    .arg(make_required_arg!("quantity")))
         .get_matches();
 
     let client = Client::new();
@@ -56,7 +76,8 @@ fn main() {
             }
         }
         Some("list-inventory") => {
-            for item in client.get_inventory().expect("Failed to retrieve items") {
+            for inv_item in client.get_inventory().expect("Failed to retrieve items") {
+                let item = inv_item.get_item();
                 println!("Found {} of {:x}", item.get_quantity(), item.get_id())
             }
         }
@@ -76,7 +97,7 @@ fn main() {
             let resp = client.set_pokemon(
                 &ppp_client::UpdatePokemon{
                     slot: get_arg(matches, "SLOT").unwrap(),
-                    id: get_arg(matches, "id"),
+                    id: get_arg_radx(matches, "id", 16),
                     hp: get_arg(matches, "hp"),
                     level: get_arg(matches, "level"),
                     max_hp: get_arg(matches, "max-hp"),
@@ -87,6 +108,25 @@ fn main() {
                 }
             );
             println!("Pokemon: {:?}", resp)
+        }
+        Some("update-item") => {
+            let matches = matches.subcommand_matches("update-item").unwrap();
+            let resp = client.update_item(
+                get_arg(matches, "SLOT").unwrap(),
+                get_arg_radx(matches, "id", 16).unwrap(),
+                get_arg(matches, "quantity").unwrap()
+            ).expect("failed to set item");
+            let item = resp.get_item();
+            println!("Set slot {} to {} of {:x}", resp.position, item.quantity, item.id);
+        }
+        Some("add-item") => {
+            let matches = matches.subcommand_matches("add-item").unwrap();
+            let resp = client.add_item(
+                get_arg_radx(matches, "id", 16).unwrap(),
+                get_arg(matches, "quantity").unwrap()
+            ).expect("failed to set item");
+            let item = resp.get_item();
+            println!("Set slot {} to {} of {:x}", resp.position, item.quantity, item.id);
         }
         Some(cmd) => panic!(format!("unknown subcommand {}", cmd)),
         None => {

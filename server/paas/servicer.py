@@ -85,9 +85,12 @@ class PokemonRedService(server_pb2_grpc.PokemonRedServicer):
     def get_inventory_item(self, index):
         offset = (POKEMON_INVENTORY_START + 1) + (index * 2)
 
+
         return pb.InventoryItem(
-            id=self._pyboy.getMemoryValue(offset),
-            quantity=self._pyboy.getMemoryValue(offset + 1),
+            item=pb.Item(
+                id=self._pyboy.getMemoryValue(offset),
+                quantity=self._pyboy.getMemoryValue(offset + 1),
+            ),
             position=index,
         )
 
@@ -95,3 +98,36 @@ class PokemonRedService(server_pb2_grpc.PokemonRedServicer):
         total = self._pyboy.getMemoryValue(POKEMON_INVENTORY_START)
         return pb.GetInventoryResponse(
             items=map(self.get_inventory_item, range(total)))
+
+    def _update_inventory_item(self, slot, item):
+        offset = (POKEMON_INVENTORY_START + 1) + (slot * 2)
+        print("setting item at {:x}".format(offset))
+        self._pyboy.setMemoryValue(offset, item.id)
+        self._pyboy.setMemoryValue(offset + 1, item.quantity)
+
+    def UpdateInventory(self, request, context):
+        total = self._pyboy.getMemoryValue(POKEMON_INVENTORY_START)
+        item = request.item
+        if item.position > total:
+            raise IndexError("{} is out of range", item.position)
+
+        self._update_inventory_item(item.position, item.item)
+        return pb.UpdateInventoryResponse(
+            item=self.get_inventory_item(item.position))
+
+    def AddItem(self, request, context):
+        total = self._pyboy.getMemoryValue(POKEMON_INVENTORY_START)
+        if total >= 20:
+            raise IndexError("We already have 20 items!")
+
+        total += 1
+        # update total
+        self._pyboy.setMemoryValue(POKEMON_INVENTORY_START, total)
+        # set items
+        self._update_inventory_item(total - 1, request.item) # zero-indexed
+        # set terminator
+        terminator = POKEMON_INVENTORY_START + 1 + (2 * total)
+        print("null terminator at {:x}".format(terminator))
+        self._pyboy.setMemoryValue(terminator, 0xff)
+
+        return pb.AddItemResponse(item=self.get_inventory_item(total - 1))
