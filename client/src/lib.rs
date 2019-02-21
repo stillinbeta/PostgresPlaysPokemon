@@ -98,7 +98,7 @@ impl Client {
     }
 
     pub fn update_item(&self, slot: u32, id: u32, quantity: u32) -> Result<server::InventoryItem, grpc::Error> {
-        let invitem = server::InventoryItem::new();
+        let mut invitem = server::InventoryItem::new();
         invitem.set_item(server::Item{id, quantity, ..Default::default()});
         invitem.set_position(slot);
 
@@ -123,6 +123,14 @@ impl Client {
         let resp = self.client.update_pokemon(grpc::RequestOptions::new(), p.into());
         let (_, mut poke, _) = resp.wait()?;
         Ok(poke.take_pokemon())
+    }
+
+    pub fn get_events(&self) -> Result<Vec<server::Event>, grpc::Error> {
+        let req = server::GetEventsRequest::new();
+        let resp = self.client.get_events(grpc::RequestOptions::new(), req);
+        let (_, events, _) = resp.wait()?;
+
+        Ok(events.get_events().to_vec())
     }
 
 }

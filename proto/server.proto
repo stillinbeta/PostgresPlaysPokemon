@@ -8,6 +8,9 @@ service PokemonRed {
   rpc UpdateInventory(UpdateInventoryRequest) returns (UpdateInventoryResponse) {}
   rpc AddItem(AddItemRequest) returns (AddItemResponse) {}
 
+  rpc GetEvents(GetEventsRequest) returns (GetEventsResponse) {}
+  rpc SetEvent(SetEventRequest) returns (SetEventResponse) {}
+
   rpc SetMemory (MemoryUpdate) returns (MemoryResponse) {}
 }
 
@@ -85,8 +88,31 @@ message Item {
   uint32 quantity = 2;
 }
 
-
 message InventoryItem {
   Item item = 1;
   uint32 position = 99;
+}
+
+message Event {
+  enum EventType {
+    GOT_PARCEL = 0;
+    DELIVERED_PARCEL = 1;
+    GOT_POKEDEX = 2;
+  }
+  EventType event = 1;
+  bool setting = 2;
+}
+
+message GetEventsRequest {}
+
+message GetEventsResponse {
+  repeated Event events = 1;
+}
+
+message SetEventRequest {
+  Event event = 1;
+}
+
+message SetEventResponse {
+  Event event = 1;
 }

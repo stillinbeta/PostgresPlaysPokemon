@@ -11,6 +11,9 @@ POKEMON_STRUCT_SIZE = 44
 
 POKEMON_INVENTORY_START = 0xD31D
 
+POKEMON_OAK_EVENT = 0xD74E
+POKEMON_POKEDEX_EVENT = 0xD74B
+
 
 def _get_two_bytes(pyboy, address):
     return (pyboy.getMemoryValue(address) <<
@@ -131,3 +134,25 @@ class PokemonRedService(server_pb2_grpc.PokemonRedServicer):
         self._pyboy.setMemoryValue(terminator, 0xff)
 
         return pb.AddItemResponse(item=self.get_inventory_item(total - 1))
+
+    def GetEvents(self, request, context):
+        oak_byte = self._pyboy.getMemoryValue(POKEMON_OAK_EVENT)
+        pokedex_byte = self._pyboy.getMemoryValue(POKEMON_POKEDEX_EVENT)
+
+        return pb.GetEventsResponse(
+            events=[
+                pb.Event(
+                    event=pb.Event.GOT_PARCEL,
+                    setting=bool(oak_byte & 0x1),
+                ),
+                pb.Event(
+                    event=pb.Event.DELIVERED_PARCEL,
+                    setting=bool(oak_byte & 0x2)
+                ),
+                pb.Event(
+                    event=pb.Event.GOT_POKEDEX,
+                    setting=bool(pokedex_byte & 0x32)
+                )
+            ]
+        )
+

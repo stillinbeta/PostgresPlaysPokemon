@@ -2,7 +2,7 @@
 extern crate clap;
 extern crate ppp_client;
 
-use clap::{SubCommand,Arg};
+use clap::{SubCommand,Arg,ArgGroup};
 use ppp_client::Client;
 
 fn get_arg_radx(matches: &clap::ArgMatches, key: &str, radix: u32) -> Option<u32> {
@@ -37,6 +37,7 @@ fn main() {
     let matches = app_from_crate!()
         .subcommand(SubCommand::with_name("list-party"))
         .subcommand(SubCommand::with_name("list-inventory"))
+        .subcommand(SubCommand::with_name("list-events"))
         .subcommand(SubCommand::with_name("set-memory")
                     .arg(Arg::with_name("DESTINATION")
                          .required(true)
@@ -65,6 +66,19 @@ fn main() {
         .subcommand(SubCommand::with_name("add-item")
                     .arg(make_required_arg!("id"))
                     .arg(make_required_arg!("quantity")))
+        .subcommand(SubCommand::with_name("set-event")
+                    .arg(Arg::with_name("pokedex"))
+                    .arg(Arg::with_name("no-pokedex"))
+                    .arg(Arg::with_name("delivered-package"))
+                    .arg(Arg::with_name("no-delivered-package"))
+                    .arg(Arg::with_name("have-package"))
+                    .arg(Arg::with_name("no-have-package"))
+                    .group(ArgGroup::with_name("events")
+                           .args(&["pokedex", "no-pokedex",
+                                   "have-package", "no-have-package",
+                                   "delivered-package", "no-delivered-package"])
+                           .required(true))
+        )
         .get_matches();
 
     let client = Client::new();
@@ -79,6 +93,11 @@ fn main() {
             for inv_item in client.get_inventory().expect("Failed to retrieve items") {
                 let item = inv_item.get_item();
                 println!("Found {} of {:x}", item.get_quantity(), item.get_id())
+            }
+        }
+        Some("list-events") => {
+            for event in client.get_events().expect("Failed to retrieve events") {
+                println!("Found event: {:?} = {}", event.event, event.setting)
             }
         }
         Some("set-memory") => {
