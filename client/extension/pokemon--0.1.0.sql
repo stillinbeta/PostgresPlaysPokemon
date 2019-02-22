@@ -1,0 +1,7 @@
+CREATE FUNCTION pokemon_fdw() RETURNS fdw_handler
+AS 'MODULE_PATHNAME', 'fdw_PokemonFDW'
+LANGUAGE C STRICT;
+
+CREATE FOREIGN DATA WRAPPER pokemon handler pokemon_fdw NO VALIDATOR;
+
+CREATE SERVER red FOREIGN DATA WRAPPER pokemon;

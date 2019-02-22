@@ -1,0 +1,4 @@
+comment = 'Postgres Plays Pokemon!'
+default_version = '0.1.0'
+module_pathname = '$libdir/libpokemon_fdw'
+relocatable = true
