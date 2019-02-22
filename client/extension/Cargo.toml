@@ -1,5 +1,5 @@
 [package]
-name = "pg-extension"
+name = "pokemon-fdw"
 version = "0.1.0"
 authors = ["stillinbeta <web@stillinbeta.com>"]
 edition = "2018"
@@ -7,8 +7,8 @@ edition = "2018"
 [dependencies]
 grpc            = "~0.6"
 ppp-client = { path = "../" }
-pg-extend = { git = "https://github.com/bluejekyll/pg-extend-rs", rev = "5850649fffc64e15798750bf1fd82eacb0615763" }
-pg-extern-attr = { git = "https://github.com/bluejekyll/pg-extend-rs", rev = "5850649fffc64e15798750bf1fd82eacb0615763" }
+pg-extend = { git = "https://github.com/bluejekyll/pg-extend-rs", rev = "98762581b1372ed6e641d32fddcff3d983bc3124" }
+pg-extern-attr = { git = "https://github.com/bluejekyll/pg-extend-rs", rev = "98762581b1372ed6e641d32fddcff3d983bc3124" }
 
 [lib]
 crate-type = ["cdylib"]

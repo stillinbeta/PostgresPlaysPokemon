@@ -29,6 +29,41 @@ enum Table {
     STORY,
 }
 
+macro_rules! create_party {
+    ($s:expr, $n:expr) => (format!("
+CREATE FOREIGN TABLE {}.party (
+  id Integer
+, position Integer
+, hp Integer
+, level Integer
+, max_hp Integer
+, attack Integer
+, defense Integer
+, speed Integer
+, special Integer
+) SERVER {};
+", $s, $n))
+}
+
+macro_rules! create_inventory {
+    ($s:expr, $n:expr) => (format!("
+CREATE FOREIGN TABLE {}.inventory (
+  id Integer
+, position Integer
+, quantity Integer
+) SERVER {};
+", $s, $n))
+}
+
+macro_rules! create_story {
+    ($s:expr, $n:expr) => (format!("
+CREATE FOREIGN TABLE {}.story (
+  event text
+, setting integer
+) SERVER {};
+", $s, $n))
+}
+
 #[pg_foreignwrapper]
 struct PokemonFDW{
     table: Table,
@@ -247,6 +282,19 @@ impl ForeignData for PokemonFDW {
             retrieved: false,
             items: Vec::new(),
         }
+    }
+
+    fn schema(
+        _server_opts: OptionMap,
+        server_name: String,
+        _remote_schema: String,
+        local_schema: String
+    ) -> Option<Vec<String>> {
+        Some(vec!(
+            create_party!(local_schema, server_name),
+            create_inventory!(local_schema, server_name),
+            create_story!(local_schema, server_name),
+        ))
     }
 
     fn index_columns(_server_opts: OptionMap, _table_opts: OptionMap, table_name: String) -> Option<Vec<String>> {
