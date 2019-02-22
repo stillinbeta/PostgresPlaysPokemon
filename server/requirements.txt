@@ -1,6 +1,5 @@
-git+https://bitbucket.org/pypy/numpy.git
+-e git+https://bitbucket.org/pypy/numpy.git@4f9778cd49a48096f97cf85116b8820f3da6f80a#egg=numpy-1.10.0
+-e git://github.com/stillinbeta/PyBoy.git@bf7e9aef64dfff0be2b49310ba8fbcc833918ef0#egg=PyBoy&subdirectory=Source
 grpcio==1.18.0
 grpcio-tools==1.18.0
-pysdl2==0.9.6
-imageio==2.4.1
 protobuf==3.6.1
