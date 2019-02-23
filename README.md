@@ -67,3 +67,26 @@ There's also a CLI that performs much of the same actions as the Postgres API.
 `cargo run -- --help` should list all available operations. 
 You'll need [rust and cargo][rustup] but not Postgres.
 But where's the fun in that?
+
+## How it Works
+
+In the same process that's running the emulator, a GRPC server is listening for commands.
+Using [PyBoy's API][papi], the server looks manipulates the emulated Gameboy's memory.
+
+Right now, that server is exposed over a unix socket which the database server can connect to.
+
+The client uses Rust to translate SQL commands into GRPC, which connects 
+
+[papi]: https://github.com/Baekalfen/PyBoy#scriptsbots
+
+## #TODO
+
+* More story flags!
+* Tables for battles
+* Changing pokemon
+* Configurable connection between client and server (not just unix sockets)
+* Enums for pokemon and items instead of opaque constants
+* Maybe [bazel][bazel] for building?
+
+[bazel]: https://bazel.build
+
