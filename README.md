@@ -20,11 +20,16 @@ You'll need the Python2 PyPy version pending resolution of [this issue][numpypy]
 2. Set up a virtualenv: `virtualenv -p $(which pypy) venv`
 3. Activate the virtualenv: `. venv/bin/activate`
 4. Install the requirements: `pip install -r requirements.txt`
-5. Launch the emulator: `python main.py`
+5. Run `make` to build the protobufs
+6. Launch the emulator: `python main.py`
+
+You'll also need a Pokemon Red ROM. Place it in [`server/ROMs/Pokemon_Red.gb`][gb]
+
 
 [pyboy]: https://github.com/Baekalfen/PyBoy#starting-the-emulator
 [numpypy]: https://bitbucket.org/pypy/pypy/issues/2930/memoryview-ctypesstructure-does-not
 [pypy]: https://pypy.org/download.html
+[gb]: 
 
 ### Client
 
@@ -37,7 +42,8 @@ You first need to compile it, then make Postgres aware of it, and then you can u
 2. Install [Postgres][pg]. I test with Postgres 10; Other versions may or may not work.
 3. run `make` to build the extension
 4. run `sudo make install` to install all the required files where Postgres expects them.
-5. If you don't have one already, set up a [postgres admin][pgadmin]. On Linux at least, if you make a superuser matching your username and a database matching your username, you can just type `psql`.
+5. If you don't have one already, set up a [postgres admin][pgadmin]. 
+On Linux at least, if you make a superuser matching your username and a database matching your username, you can just type `psql`.
 6. Get a `psql` shell. It doesn't matter what database you use, where we're going we don't need databases!
 7. `CREATE EXTENSION pokemon`;
 8. `IMPORT FOREIGN SCHEMA red FROM SERVER red INTO public`;
@@ -81,12 +87,13 @@ The client uses Rust to translate SQL commands into GRPC, which connects
 
 ## #TODO
 
-* More story flags!
+* [More story flags][flags]!
 * Tables for battles
 * Changing pokemon
 * Configurable connection between client and server (not just unix sockets)
 * Enums for pokemon and items instead of opaque constants
 * Maybe [bazel][bazel] for building?
 
+[flags]: https://github.com/pret/pokered/blob/master/constants/event_constants.asm
 [bazel]: https://bazel.build
 
