@@ -1,1 +1,1 @@
-from paas.server import Server
+from .server import Server
