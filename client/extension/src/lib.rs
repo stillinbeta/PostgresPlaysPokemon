@@ -1,12 +1,12 @@
+extern crate grpc;
 extern crate pg_extend;
 extern crate pg_extern_attr;
 extern crate ppp_client;
-extern crate grpc;
 
-use ppp_client::{Client,UpdatePokemon};
-use pg_extend::pg_fdw::{ForeignRow, ForeignData, OptionMap, Tuple};
-use pg_extend::{pg_datum, pg_magic, pg_type, pg_error};
+use pg_extend::pg_fdw::{ForeignData, ForeignRow, OptionMap, Tuple};
+use pg_extend::{pg_datum, pg_error, pg_magic, pg_type};
 use pg_extern_attr::pg_foreignwrapper;
+use ppp_client::{Client, UpdatePokemon};
 
 // Bring try_from into scope
 use pg_extend::pg_datum::TryFromPgDatum;
@@ -30,7 +30,9 @@ enum Table {
 }
 
 macro_rules! create_party {
-    ($s:expr, $n:expr) => (format!("
+    ($s:expr, $n:expr) => {
+        format!(
+            "
 CREATE FOREIGN TABLE {}.party (
   id Integer
 , position Integer
@@ -42,36 +44,49 @@ CREATE FOREIGN TABLE {}.party (
 , speed Integer
 , special Integer
 ) SERVER {};
-", $s, $n))
+",
+            $s, $n
+        )
+    };
 }
 
 macro_rules! create_inventory {
-    ($s:expr, $n:expr) => (format!("
+    ($s:expr, $n:expr) => {
+        format!(
+            "
 CREATE FOREIGN TABLE {}.inventory (
   id Integer
 , position Integer
 , quantity Integer
 ) SERVER {};
-", $s, $n))
+",
+            $s, $n
+        )
+    };
 }
 
 macro_rules! create_story {
-    ($s:expr, $n:expr) => (format!("
+    ($s:expr, $n:expr) => {
+        format!(
+            "
 CREATE FOREIGN TABLE {}.story (
   event text
 , setting integer
 ) SERVER {};
-", $s, $n))
+",
+            $s, $n
+        )
+    };
 }
 
 #[pg_foreignwrapper]
-struct PokemonFDW{
+struct PokemonFDW {
     table: Table,
     retrieved: bool,
     items: Vec<Box<ForeignRow>>,
 }
 
-fn get_column (row: &Tuple, name: &str) -> Result<Option<u32>, String> {
+fn get_column(row: &Tuple, name: &str) -> Result<Option<u32>, String> {
     Ok(match row.get(name.into()) {
         Some(v) => Some(i32::try_from((v).clone())? as u32),
         None => None,
@@ -133,7 +148,6 @@ impl ForeignRow for Event {
     }
 }
 
-
 impl Iterator for PokemonFDW {
     type Item = Box<ForeignRow>;
 
@@ -142,9 +156,21 @@ impl Iterator for PokemonFDW {
             let client = Client::new();
             let res = match self.table {
                 // TODO: clean this mess up
-                Table::PARTY => client.get_pokemon().map(|r| r.iter().map(|v| Box::new(Pokemon(v.clone())) as Box<ForeignRow>).collect()),
-                Table::INVENTORY => client.get_inventory().map(|r| r.iter().map(|v| Box::new(Inventory(v.clone())) as Box<ForeignRow>).collect()),
-                Table::STORY => client.get_events().map(|r| r.iter().map(|v| Box::new(Event(v.clone())) as Box<ForeignRow>).collect()),
+                Table::PARTY => client.get_pokemon().map(|r| {
+                    r.iter()
+                        .map(|v| Box::new(Pokemon(v.clone())) as Box<ForeignRow>)
+                        .collect()
+                }),
+                Table::INVENTORY => client.get_inventory().map(|r| {
+                    r.iter()
+                        .map(|v| Box::new(Inventory(v.clone())) as Box<ForeignRow>)
+                        .collect()
+                }),
+                Table::STORY => client.get_events().map(|r| {
+                    r.iter()
+                        .map(|v| Box::new(Event(v.clone())) as Box<ForeignRow>)
+                        .collect()
+                }),
             };
             match res {
                 Ok(vec) => {
@@ -152,11 +178,16 @@ impl Iterator for PokemonFDW {
                     self.retrieved = true;
                 }
                 Err(err) => {
-                    pg_error::log(pg_error::Level::Error, file!(), line!(), module_path!(), format!("{:?}", err));
-                    return None
+                    pg_error::log(
+                        pg_error::Level::Error,
+                        file!(),
+                        line!(),
+                        module_path!(),
+                        format!("{:?}", err),
+                    );
+                    return None;
                 }
             }
-
         }
 
         self.items.pop()
@@ -167,11 +198,10 @@ impl PokemonFDW {
     fn update_party(&self, row: &Tuple, _indices: &Tuple) -> Result<Box<ForeignRow>, String> {
         let client = Client::new();
         let slot = match row.get("position") {
-            Some(slot) =>
-                match i32::try_from((*slot).clone()) {
-                    Ok(i)  => i as u32,
-                    Err(err) => return Err(format!("couldn't convert position: {}", err)),
-                },
+            Some(slot) => match i32::try_from((*slot).clone()) {
+                Ok(i) => i as u32,
+                Err(err) => return Err(format!("couldn't convert position: {}", err)),
+            },
             None => return Err("tried to update pokemon without a position!".into()),
         };
 
@@ -179,7 +209,7 @@ impl PokemonFDW {
             return Err(format!("Invalid slot {}", slot));
         }
 
-        let update = UpdatePokemon{
+        let update = UpdatePokemon {
             slot: slot,
             id: get_column(row, "id")?,
             hp: get_column(row, "hp")?,
@@ -200,10 +230,10 @@ impl PokemonFDW {
     fn get_number_column(row: &Tuple, column: &str) -> Result<u32, String> {
         match row.get(column) {
             Some(slot) => match i32::try_from((*slot).clone()) {
-                Ok(i)  => Ok(i as u32),
+                Ok(i) => Ok(i as u32),
                 Err(err) => Err(format!("couldn't convert {}: {}", column, err)),
-            }
-            None => Err("tried to update inventory without a position!".into())
+            },
+            None => Err("tried to update inventory without a position!".into()),
         }
     }
 
@@ -215,7 +245,7 @@ impl PokemonFDW {
 
         match client.update_item(position, id, quantity) {
             Ok(i) => Ok(Box::new(Inventory(i))),
-            Err(err) => Err(format!("Update failed: {:?}", err))
+            Err(err) => Err(format!("Update failed: {:?}", err)),
         }
     }
     fn update_event(&self, row: &Tuple, _indices: &Tuple) -> Result<Box<ForeignRow>, String> {
@@ -229,7 +259,7 @@ impl PokemonFDW {
             "GOT_POKEDEX" => ppp_client::server::Event_EventType::GOT_POKEDEX,
             "DELIVERED_PARCEL" => ppp_client::server::Event_EventType::DELIVERED_PARCEL,
             "GOT_PARCEL" => ppp_client::server::Event_EventType::GOT_PARCEL,
-            evt => return Err(format!("Unknown event {}", evt))
+            evt => return Err(format!("Unknown event {}", evt)),
         };
 
         // TODO: should be a bool
@@ -237,7 +267,7 @@ impl PokemonFDW {
 
         match client.set_event(evt, setting != 0) {
             Ok(i) => Ok(Box::new(Event(i))),
-            Err(err) => Err(format!("Update failed: {:?}", err))
+            Err(err) => Err(format!("Update failed: {:?}", err)),
         }
     }
 
@@ -253,24 +283,28 @@ impl PokemonFDW {
 
         match client.add_item(id, quantity) {
             Ok(i) => Ok(Box::new(Inventory(i))),
-            Err(err) => Err(format!("Insert failed: {:?}", err))
+            Err(err) => Err(format!("Insert failed: {:?}", err)),
         }
     }
 }
 
 impl ForeignData for PokemonFDW {
     fn begin(_sopts: OptionMap, _topts: OptionMap, table_name: String) -> Self {
-        PokemonFDW{
+        PokemonFDW {
             table: match table_name.as_str() {
                 "party" => Table::PARTY,
                 "inventory" => Table::INVENTORY,
                 "story" => Table::STORY,
                 table => {
                     pg_error::log(
-                        pg_error::Level::Error, file!(), line!(), module_path!(),
-                        format!("Unknown table: {}", table));
+                        pg_error::Level::Error,
+                        file!(),
+                        line!(),
+                        module_path!(),
+                        format!("Unknown table: {}", table),
+                    );
                     Table::PARTY
-                },
+                }
             },
             retrieved: false,
             items: Vec::new(),
@@ -281,22 +315,31 @@ impl ForeignData for PokemonFDW {
         _server_opts: OptionMap,
         server_name: String,
         _remote_schema: String,
-        local_schema: String
+        local_schema: String,
     ) -> Option<Vec<String>> {
-        Some(vec!(
+        Some(vec![
             create_party!(local_schema, server_name),
             create_inventory!(local_schema, server_name),
             create_story!(local_schema, server_name),
-        ))
+        ])
     }
 
-    fn index_columns(_server_opts: OptionMap, _table_opts: OptionMap, table_name: String) -> Option<Vec<String>> {
+    fn index_columns(
+        _server_opts: OptionMap,
+        _table_opts: OptionMap,
+        table_name: String,
+    ) -> Option<Vec<String>> {
         match table_name.as_str() {
-            "party" | "inventory" => Some(vec!("position".into())),
-            "story" => Some(vec!("event".into())),
+            "party" | "inventory" => Some(vec!["position".into()]),
+            "story" => Some(vec!["event".into()]),
             table => {
-                pg_error::log(pg_error::Level::Error, file!(), line!(), module_path!(),
-                              format!("unknown table {}", table));
+                pg_error::log(
+                    pg_error::Level::Error,
+                    file!(),
+                    line!(),
+                    module_path!(),
+                    format!("unknown table {}", table),
+                );
                 None
             }
         }
@@ -312,7 +355,13 @@ impl ForeignData for PokemonFDW {
         match res {
             Ok(res) => Some(res),
             Err(err) => {
-                pg_error::log(pg_error::Level::Error, file!(), line!(), module_path!(), err);
+                pg_error::log(
+                    pg_error::Level::Error,
+                    file!(),
+                    line!(),
+                    module_path!(),
+                    err,
+                );
                 None
             }
         }
@@ -328,7 +377,13 @@ impl ForeignData for PokemonFDW {
         match res {
             Ok(res) => Some(res),
             Err(err) => {
-                pg_error::log(pg_error::Level::Error, file!(), line!(), module_path!(), err);
+                pg_error::log(
+                    pg_error::Level::Error,
+                    file!(),
+                    line!(),
+                    module_path!(),
+                    err,
+                );
                 None
             }
         }

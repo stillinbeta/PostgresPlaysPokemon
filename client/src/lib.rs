@@ -1,10 +1,10 @@
-extern crate protobuf;
-extern crate grpc;
 extern crate futures;
 extern crate futures_cpupool;
+extern crate grpc;
+extern crate protobuf;
 
-mod server_grpc;
 pub mod server;
+mod server_grpc;
 
 // Add new_plain_unix method
 use grpc::ClientStubExt;
@@ -30,7 +30,7 @@ pub struct UpdatePokemon {
     pub special: Option<u32>,
 }
 
-impl From<&UpdatePokemon> for  server::UpdatePokemonRequest {
+impl From<&UpdatePokemon> for server::UpdatePokemonRequest {
     fn from(p: &UpdatePokemon) -> server::UpdatePokemonRequest {
         let mut req = server::UpdatePokemonRequest::new();
         req.set_position(p.slot.into());
@@ -60,7 +60,6 @@ impl From<&UpdatePokemon> for  server::UpdatePokemonRequest {
         }
         req
     }
-
 }
 
 impl Client {
@@ -68,11 +67,11 @@ impl Client {
         let conf = Default::default();
 
         Client {
-            client: server_grpc::PokemonRedClient::new_plain_unix(SOCKET_PATH, conf).unwrap()
+            client: server_grpc::PokemonRedClient::new_plain_unix(SOCKET_PATH, conf).unwrap(),
         }
     }
 
-    pub fn get_pokemon(&self) -> Result<Vec<server::Pokemon>, grpc::Error>{
+    pub fn get_pokemon(&self) -> Result<Vec<server::Pokemon>, grpc::Error> {
         let req = server::GetPokemonRequest::new();
         let resp = self.client.get_pokemon(grpc::RequestOptions::new(), req);
         let (_, party, _) = resp.wait()?;
@@ -88,27 +87,42 @@ impl Client {
         Ok(items.get_items().to_vec())
     }
 
-    pub fn add_item(&self, id: u32, quantity: u32) -> Result<server::InventoryItem, grpc::Error>{
+    pub fn add_item(&self, id: u32, quantity: u32) -> Result<server::InventoryItem, grpc::Error> {
         let mut req = server::AddItemRequest::new();
-        req.set_item(server::Item{id, quantity, ..Default::default()});
+        req.set_item(server::Item {
+            id,
+            quantity,
+            ..Default::default()
+        });
         let resp = self.client.add_item(grpc::RequestOptions::new(), req);
 
         let (_, mut resp, _) = resp.wait()?;
         Ok(resp.take_item())
     }
 
-    pub fn update_item(&self, slot: u32, id: u32, quantity: u32) -> Result<server::InventoryItem, grpc::Error> {
+    pub fn update_item(
+        &self,
+        slot: u32,
+        id: u32,
+        quantity: u32,
+    ) -> Result<server::InventoryItem, grpc::Error> {
         let mut invitem = server::InventoryItem::new();
-        invitem.set_item(server::Item{id, quantity, ..Default::default()});
+        invitem.set_item(server::Item {
+            id,
+            quantity,
+            ..Default::default()
+        });
         invitem.set_position(slot);
 
         let mut req = server::UpdateInventoryRequest::new();
         req.set_item(invitem);
-        let resp = self.client.update_inventory(grpc::RequestOptions::new(), req);
+        let resp = self
+            .client
+            .update_inventory(grpc::RequestOptions::new(), req);
 
         let (_, mut resp, _) = resp.wait()?;
         Ok(resp.take_item())
-     }
+    }
 
     pub fn set_memory(&self, dest: u32, val: u32) -> Result<u32, grpc::Error> {
         let mut req = server::MemoryUpdate::new();
@@ -120,7 +134,9 @@ impl Client {
     }
 
     pub fn set_pokemon(&self, p: &UpdatePokemon) -> Result<server::Pokemon, grpc::Error> {
-        let resp = self.client.update_pokemon(grpc::RequestOptions::new(), p.into());
+        let resp = self
+            .client
+            .update_pokemon(grpc::RequestOptions::new(), p.into());
         let (_, mut poke, _) = resp.wait()?;
         Ok(poke.take_pokemon())
     }
@@ -133,8 +149,12 @@ impl Client {
         Ok(events.get_events().to_vec())
     }
 
-    pub fn set_event(&self, event: server::Event_EventType, setting: bool) -> Result<server::Event, grpc::Error> {
-        let evt = server::Event{
+    pub fn set_event(
+        &self,
+        event: server::Event_EventType,
+        setting: bool,
+    ) -> Result<server::Event, grpc::Error> {
+        let evt = server::Event {
             event,
             setting,
             ..Default::default()
@@ -146,7 +166,6 @@ impl Client {
         let (_, mut evt, _) = resp.wait()?;
         Ok(evt.take_event())
     }
-
 }
 
 #[cfg(test)]
