@@ -71,18 +71,11 @@ struct PokemonFDW{
     items: Vec<Box<ForeignRow>>,
 }
 
-fn get_column (row: &Tuple, name: &str) -> Option<u32> {
-    match row.get(name.into()) {
-        Some(v) => match i32::try_from((*v).clone()) {
-            Ok(i) => Some(i as u32),
-            Err(err) => {
-                pg_error::log(pg_error::Level::Error, file!(), line!(), module_path!(),
-                              format!("couldn't convert {}: {}", name, err));
-                None
-            }
-        },
+fn get_column (row: &Tuple, name: &str) -> Result<Option<u32>, String> {
+    Ok(match row.get(name.into()) {
+        Some(v) => Some(i32::try_from((v).clone())? as u32),
         None => None,
-    }
+    })
 }
 
 impl ForeignRow for Pokemon {
@@ -188,14 +181,14 @@ impl PokemonFDW {
 
         let update = UpdatePokemon{
             slot: slot,
-            id: get_column(row, "id"),
-            hp: get_column(row, "hp"),
-            level: get_column(row, "level"),
-            max_hp: get_column(row, "max_hp"),
-            attack: get_column(row, "attack"),
-            defense: get_column(row, "defense"),
-            speed: get_column(row, "speed"),
-            special: get_column(row, "special"),
+            id: get_column(row, "id")?,
+            hp: get_column(row, "hp")?,
+            level: get_column(row, "level")?,
+            max_hp: get_column(row, "max_hp")?,
+            attack: get_column(row, "attack")?,
+            defense: get_column(row, "defense")?,
+            speed: get_column(row, "speed")?,
+            special: get_column(row, "special")?,
         };
 
         match client.set_pokemon(&update) {
