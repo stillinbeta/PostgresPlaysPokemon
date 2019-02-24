@@ -2,8 +2,10 @@
 extern crate clap;
 extern crate ppp_client;
 
-use clap::{Arg, ArgGroup, SubCommand};
+use clap::{Arg, SubCommand};
 use ppp_client::Client;
+
+use ppp_client::server::Event_EventType as Event;
 
 fn get_arg_radx(matches: &clap::ArgMatches, key: &str, radix: u32) -> Option<u32> {
     matches
@@ -65,24 +67,12 @@ fn main() {
         )
         .subcommand(
             SubCommand::with_name("set-event")
-                .arg(Arg::with_name("pokedex"))
-                .arg(Arg::with_name("no-pokedex"))
-                .arg(Arg::with_name("delivered-package"))
-                .arg(Arg::with_name("no-delivered-package"))
-                .arg(Arg::with_name("have-package"))
-                .arg(Arg::with_name("no-have-package"))
-                .group(
-                    ArgGroup::with_name("events")
-                        .args(&[
-                            "pokedex",
-                            "no-pokedex",
-                            "have-package",
-                            "no-have-package",
-                            "delivered-package",
-                            "no-delivered-package",
-                        ])
-                        .required(true),
-                ),
+                .subcommand(SubCommand::with_name("pokedex"))
+                .subcommand(SubCommand::with_name("no-pokedex"))
+                .subcommand(SubCommand::with_name("delivered-parcel"))
+                .subcommand(SubCommand::with_name("no-delivered-parcel"))
+                .subcommand(SubCommand::with_name("have-parcel"))
+                .subcommand(SubCommand::with_name("no-have-parcel")),
         )
         .get_matches();
 
@@ -157,6 +147,26 @@ fn main() {
                 "Set slot {} to {} of {:x}",
                 resp.position, item.quantity, item.id
             );
+        }
+        Some("set-event") => {
+            let matches = matches.subcommand_matches("set-event").unwrap();
+            let (event, setting) = match matches.subcommand_name() {
+                Some("pokedex") => (Event::GOT_POKEDEX, true),
+                Some("no-pokedex") => (Event::GOT_POKEDEX, false),
+                Some("delivered-parcel") => (Event::DELIVERED_PARCEL, true),
+                Some("no-delivered-parcel") => (Event::DELIVERED_PARCEL, false),
+                Some("have-parcel") => (Event::GOT_PARCEL, true),
+                Some("no-have-parcel") => (Event::GOT_PARCEL, false),
+                _ => {
+                    eprintln!("Missing or unknown setting");
+                    std::process::exit(1);
+                }
+            };
+
+            let resp = client
+                .set_event(event, setting)
+                .expect("failed to set event");
+            println!("Set event {:?} = {}", resp.event, resp.setting);
         }
         Some(cmd) => panic!(format!("unknown subcommand {}", cmd)),
         None => {
